@@ -1,0 +1,19 @@
+{
+  "name": "twitterbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amgarton47/Twitter-Bot.git"
+  },
+  "author": "Aidan Garton",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amgarton47/Twitter-Bot/issues"
+  },
+  "homepage": "https://github.com/amgarton47/Twitter-Bot#readme"
+}
