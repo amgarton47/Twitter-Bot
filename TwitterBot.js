@@ -6,7 +6,9 @@ const quotesData = require("./quotes");
 
 const T = new Twit(config);
 
-const quotes = quotesData.map(quoteObj => quoteObj["quote"]);
+const quotes = quotesData.map(
+  quoteObj => `"${quoteObj["quote"]}" -${quoteObj["author"]}`
+);
 
 // this function will post a tweet with 'tweetContent' as its text
 function postTweet(tweetContent) {
