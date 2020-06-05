@@ -71,5 +71,5 @@ function postMediaTweet(caption) {
 
 setInterval(
   () => postTweet(quotes[Math.floor(Math.random() * quotes.length)]),
-  1000 * 5
+  1000 * 60 * 60 * 60 * 4
 );
