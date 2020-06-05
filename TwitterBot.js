@@ -1,14 +1,21 @@
-const Twit = require("twit");
-const config = require("./config");
 const fs = require("fs");
+const axios = require("axios");
+const config = require("./config"); // our twitter api credentials
+const giphy_key = require("./giphy-api-key"); // our giphy api credentials
 
-const quotesData = require("./quotes");
+const quotesData = require("./quotes"); // locally stored json data of quotes
 
+const Twit = require("twit");
+const download = require("image-downloader"); // lets us locally download gifs
 const T = new Twit(config);
 
-const quotes = quotesData.map(
-  quoteObj => `"${quoteObj["quote"]}" -${quoteObj["author"]}`
-);
+// format json data to our desired quote format, replacing empty authors with 'Anonymous'
+const quotes = quotesData.map(quoteObj => {
+  if (quoteObj["quoteAuthor"] === "") {
+    return `"${quoteObj["quoteText"]}" - Anonymous`;
+  }
+  return `"${quoteObj["quoteText"]}" -${quoteObj["quoteAuthor"]}`;
+});
 
 // this function will post a tweet with 'tweetContent' as its text
 function postTweet(tweetContent) {
@@ -23,12 +30,10 @@ function postTweet(tweetContent) {
   });
 }
 
-// post a tweet with media
+// this function will post a tweet with our gif located locally "gifs/giphy.gif"
+// it has param 'caption' that corresponds to the posted tweet's caption
 function postMediaTweet(caption) {
-  var b64content = fs.readFileSync(
-    "/Users/aidangarton/Desktop/Code/TwitterBot/Robots-Square.jpg",
-    { encoding: "base64" }
-  );
+  var b64content = fs.readFileSync("gifs/giphy.gif", { encoding: "base64" });
 
   // first we must post the media to Twitter
   T.post(
@@ -58,18 +63,52 @@ function postMediaTweet(caption) {
           };
 
           T.post("statuses/update", params, function (err, data, response) {
-            console.log("MEDIA POST SUCCESFUL");
+            if (!err) {
+              console.log("MEDIA POST SUCCESFUL");
+            } else {
+              console.log(err);
+            }
           });
+        } else {
+          console.log(err);
         }
       });
     }
   );
 }
 
-// postMediaTweet("hi");
-// postTweet("This is a Twitter Bot!");
+// this function starts our promise chain
+// first get the random gif url from the giphy endpoint
+// then download that gif locally to "gifs/giphy.gif"
+// then post that gif to twitter with our randomly selected quote as the caption
+function getGifUrl() {
+  axios
+    .get(`http://api.giphy.com/v1/gifs/random?api_key=${giphy_key}&limit=1`)
+    .then(result => {
+      console.log(result.data.data.image_url);
+      downloadGif(result.data.data.image_url);
+    })
+    .catch(error => {
+      console.log(error);
+    });
+}
 
-setInterval(
-  () => postTweet(quotes[Math.floor(Math.random() * quotes.length)]),
-  1000 * 60 * 60 * 60 * 4
-);
+// downloads an image locally to "gifs/giphy.gif" given the image url
+function downloadGif(imageUrl) {
+  const options = {
+    url: imageUrl,
+    dest: "gifs/giphy.gif",
+  };
+
+  download
+    .image(options)
+    .then(({ filename }) => {
+      console.log("Saved to", filename);
+      postMediaTweet(quotes[Math.floor(Math.random() * quotes.length)]);
+    })
+    .catch(err => console.error(err));
+}
+
+// make a post right at run-time, then make a post every 4 hours
+getGifUrl();
+setInterval(getGifUrl, 1000 * 60 * 60 * 4);
