@@ -1,9 +1,12 @@
 const Twit = require("twit");
 const config = require("./config");
-const T = new Twit(config);
 const fs = require("fs");
 
-const axios = require("axios");
+const quotesData = require("./quotes");
+
+const T = new Twit(config);
+
+const quotes = quotesData.map(quoteObj => quoteObj["quote"]);
 
 // this function will post a tweet with 'tweetContent' as its text
 function postTweet(tweetContent) {
@@ -60,3 +63,11 @@ function postMediaTweet(caption) {
     }
   );
 }
+
+// postMediaTweet("hi");
+// postTweet("This is a Twitter Bot!");
+
+setInterval(
+  () => postTweet(quotes[Math.floor(Math.random() * quotes.length)]),
+  1000 * 5
+);
